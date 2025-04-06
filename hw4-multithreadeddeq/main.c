@@ -20,11 +20,11 @@
 static void *produce(void *a)
 {
   void **arg = a;
-  // if (!arg[0] || !arg[1])
-  // {
-  //   // Variables are not properly set when passing to produce
-  //   ERROR("Struct is not assembled properly");
-  // }
+  if (!arg[0] || !arg[1])
+  {
+    // Variables are not properly set when passing to produce
+    ERROR("Struct is not assembled properly");
+  }
   Deq q = (Deq)arg[0];
   Lawn l = (Lawn)arg[1];
   deq_tail_put(q, mole_new(l, 0, 0));
