@@ -16,7 +16,7 @@ static int rdm(int lo, int hi)
 extern Mole mole_new(Lawn l, int vimlo, int vimhi)
 {
 
-  fprintf(stdout, "Creating mole!\n");
+  // fprintf(stdout, "Creating mole!\n");
 
   if (!vimlo)
     vimlo = 1;
@@ -28,7 +28,7 @@ extern Mole mole_new(Lawn l, int vimlo, int vimhi)
   if (!mole)
     ERROR("malloc() failed");
 
-  fprintf(stdout, "Allocated memory for mole!\n");
+  // fprintf(stdout, "Allocated memory for mole!\n");
 
   mole->size = lawn->molesize;
   int max = lawn->lawnsize * lawn->molesize;
@@ -40,7 +40,7 @@ extern Mole mole_new(Lawn l, int vimlo, int vimhi)
   mole->lawn = lawn;
   mole->box = lawnimp_mole(mole);
 
-  fprintf(stdout, "Mole created!\n");
+  // fprintf(stdout, "Mole created!\n");
 
   return mole;
 }
