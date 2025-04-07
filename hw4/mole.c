@@ -8,31 +8,45 @@
 #undef LAWNIMP
 #include "error.h"
 
-static int rdm(int lo, int hi) {
-  return random()%(hi-lo+1)+lo;
+static int rdm(int lo, int hi)
+{
+  return random() % (hi - lo + 1) + lo;
 }
 
-extern Mole mole_new(Lawn l, int vimlo, int vimhi) {
-  if (!vimlo) vimlo=1;
-  if (!vimhi) vimhi=5;
+extern Mole mole_new(Lawn l, int vimlo, int vimhi)
+{
 
-  LawnRep lawn=(LawnRep)l;
-  MoleRep mole=(MoleRep)malloc(sizeof(*mole));
-  if (!mole) ERROR("malloc() failed");
-  mole->size=lawn->molesize;
-  int max=lawn->lawnsize*lawn->molesize;
-  mole->x=rdm(0,max-1);
-  mole->y=rdm(0,max-1);
-  mole->vim0=rdm(vimlo,vimhi);
-  mole->vim1=rdm(vimlo,vimhi);
-  mole->vim2=rdm(vimlo,vimhi);
-  mole->lawn=lawn;
-  mole->box=lawnimp_mole(mole);
+  fprintf(stdout, "Creating mole!\n");
+
+  if (!vimlo)
+    vimlo = 1;
+  if (!vimhi)
+    vimhi = 5;
+
+  LawnRep lawn = (LawnRep)l;
+  MoleRep mole = (MoleRep)malloc(sizeof(*mole));
+  if (!mole)
+    ERROR("malloc() failed");
+
+  fprintf(stdout, "Allocated memory for mole!\n");
+
+  mole->size = lawn->molesize;
+  int max = lawn->lawnsize * lawn->molesize;
+  mole->x = rdm(0, max - 1);
+  mole->y = rdm(0, max - 1);
+  mole->vim0 = rdm(vimlo, vimhi);
+  mole->vim1 = rdm(vimlo, vimhi);
+  mole->vim2 = rdm(vimlo, vimhi);
+  mole->lawn = lawn;
+  mole->box = lawnimp_mole(mole);
+
+  fprintf(stdout, "Mole created!\n");
+
   return mole;
 }
 
-extern void mole_whack(Mole m) {
+extern void mole_whack(Mole m)
+{
   lawnimp_whack(m);
   free(m);
 }
-
