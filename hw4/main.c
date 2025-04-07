@@ -57,6 +57,7 @@ static void *consume(void *a)
   // Utilize thread safe operation
   fprintf(stdout, "Wacking mole!\n");
   mole_whack(mtq_head_get(q));
+  fprintf(stdout, "Mole has been wacked!\n");
   return 0;
 }
 
@@ -77,7 +78,7 @@ void multicreateconsume(int n, pthread_t consumers[], void *deq)
   for (int i = 0; i < n; i++)
   {
     // MT variant to consume
-    fprintf(stdout, "Creating consumer thread!\n");
+    fprintf(stdout, "Creating consumer thread number: %d!\n", i);
     pthread_create(&consumers[i], NULL, consume, deq);
   }
 }

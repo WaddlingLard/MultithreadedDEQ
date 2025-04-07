@@ -9,7 +9,7 @@
 
 typedef struct
 {
-    pthread_mutex_t mutexlock;
+    pthread_mutex_t readlock, writelock;
     // Will add condition variables later
     pthread_cond_t condition;
     Deq *deq;
@@ -33,8 +33,9 @@ extern Mtq mtq_new(int max)
         ERROR("ERROR: Malloc failed!");
     }
 
-    // Initialize the mutex lock and condition
-    pthread_mutex_init(&rep->mutexlock, NULL);
+    // Initialize the mutex locks and condition
+    pthread_mutex_init(&rep->readlock, NULL);
+    pthread_mutex_init(&rep->writelock, NULL);
     pthread_cond_init(&rep->condition, NULL);
 
     // Add deq and starting size
@@ -88,7 +89,7 @@ extern Mole mtq_head_get(Mtq mtq)
     MtqRep rep = (MtqRep)mtq;
 
     // Lock the mutex
-    pthread_mutex_lock(&rep->mutexlock);
+    pthread_mutex_lock(&rep->readlock);
 
     fprintf(stdout, "Hand in cookie jar to get!\n");
 
@@ -98,9 +99,13 @@ extern Mole mtq_head_get(Mtq mtq)
     {
         // Just Spin?
         // Add condition variable here
-        fprintf(stdout, "Size: %d\n", rep->size);
-        pthread_cond_wait(&rep->condition, &rep->mutexlock);
+        fprintf(stdout, "Nothing is in the mtq!\n");
+        // fprintf(stdout, "Size: %d, Max: %d\n", rep->size, rep->max);
+        pthread_cond_wait(&rep->condition, &rep->readlock);
+        fprintf(stdout, "Waiting complete!\n");
     }
+
+    fprintf(stdout, "Size: %d, Max: %d\n", rep->size, rep->max);
 
     fprintf(stdout, "Grabbing item in cookie jar!\n");
 
@@ -112,7 +117,7 @@ extern Mole mtq_head_get(Mtq mtq)
     rep->size = rep->size - 1;
 
     // Unlock and add signaling (W.I.P)
-    pthread_mutex_unlock(&rep->mutexlock);
+    pthread_mutex_unlock(&rep->readlock);
     pthread_cond_signal(&rep->condition);
 
     // Return the acquired mole
@@ -132,17 +137,21 @@ extern void mtq_tail_put(Mtq mtq, Mole mole)
     MtqRep rep = (MtqRep)mtq;
 
     // Lock the mutex
-    pthread_mutex_lock(&rep->mutexlock);
+    pthread_mutex_lock(&rep->writelock);
 
-    fprintf(stdout, "Hand in cookie jar!\n");
+    fprintf(stdout, "Hand in cookie jar (PUTTING)!\n");
 
     // Has it hit the limit?
-    while (!(rep->zeroflag) || rep->size < rep->max)
+    // ! logic error
+    while (!(rep->zeroflag) || rep->size > rep->max)
     {
         // Just Spin?
         // Add condition variable here
-        pthread_cond_wait(&rep->condition, &rep->mutexlock);
+        fprintf(stdout, "Cannot add! Statement 1: %d, 2: %d\n", !(rep->zeroflag), rep->size < rep->max);
+        pthread_cond_wait(&rep->condition, &rep->writelock);
     }
+
+    fprintf(stdout, "About to add, current size: %d, max: %d\n", rep->size, rep->max);
 
     // Able to put something on the mtq
     deq_tail_put(rep->deq, mole);
@@ -151,7 +160,7 @@ extern void mtq_tail_put(Mtq mtq, Mole mole)
     rep->size = rep->size + 1;
 
     // Unlock and add signaling (W.I.P)
-    pthread_mutex_unlock(&rep->mutexlock);
+    pthread_mutex_unlock(&rep->writelock);
     pthread_cond_signal(&rep->condition);
 
     // Successful operation!
