@@ -143,11 +143,11 @@ extern void mtq_tail_put(Mtq mtq, Mole mole)
 
     // Has it hit the limit?
     // ! logic error
-    while (!(rep->zeroflag) || rep->size > rep->max)
+    while (!(rep->zeroflag) && rep->size > rep->max)
     {
         // Just Spin?
         // Add condition variable here
-        fprintf(stdout, "Cannot add! Statement 1: %d, 2: %d\n", !(rep->zeroflag), rep->size < rep->max);
+        fprintf(stdout, "Cannot add! Statement 1: %d, 2: %d\n", !(rep->zeroflag), rep->size > rep->max);
         pthread_cond_wait(&rep->condition, &rep->writelock);
     }
 
