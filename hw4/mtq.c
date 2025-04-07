@@ -11,7 +11,7 @@ typedef struct
 {
     pthread_mutex_t mutexlock;
     // Will add condition variables later
-    // pthread_cond_t condition;
+    pthread_cond_t condition;
     Deq *deq;
     // Keep track of the multihreaded queue a different way
     int size;
@@ -33,8 +33,9 @@ extern Mtq mtq_new(int max)
         ERROR("ERROR: Malloc failed!");
     }
 
-    // Initialize the mutex lock
-    pthread_mutex_init(&rep->mutexlock, 0);
+    // Initialize the mutex lock and condition
+    pthread_mutex_init(&rep->mutexlock, NULL);
+    pthread_cond_init(&rep->condition, NULL);
 
     // Add deq and starting size
     rep->deq = deq_new();
@@ -80,6 +81,7 @@ extern void mtq_del(Mtq mtq)
 // DOCUMENTATION
 extern Mole mtq_head_get(Mtq mtq)
 {
+    fprintf(stdout, "Grabbing a mole from the mtq!\n");
     // Grab the Mole at the head of the queue
 
     // Get the representation of the multithreaded queue
@@ -88,19 +90,30 @@ extern Mole mtq_head_get(Mtq mtq)
     // Lock the mutex
     pthread_mutex_lock(&rep->mutexlock);
 
+    fprintf(stdout, "Hand in cookie jar to get!\n");
+
     // Needs something in the mtq
-    while (rep->size != 0)
+    // ! logic is wrong
+    while (rep->size == 0)
     {
         // Just Spin?
         // Add condition variable here
+        fprintf(stdout, "Size: %d\n", rep->size);
+        pthread_cond_wait(&rep->condition, &rep->mutexlock);
     }
+
+    fprintf(stdout, "Grabbing item in cookie jar!\n");
 
     // Something is in the mtq!
     // ? I think this is accessing it properly
     Mole mole = deq_head_get(rep->deq);
 
+    // Adjust size
+    rep->size = rep->size - 1;
+
     // Unlock and add signaling (W.I.P)
     pthread_mutex_unlock(&rep->mutexlock);
+    pthread_cond_signal(&rep->condition);
 
     // Return the acquired mole
     return mole;
@@ -111,6 +124,8 @@ extern Mole mtq_head_get(Mtq mtq)
 // DOCUMENTATION
 extern void mtq_tail_put(Mtq mtq, Mole mole)
 {
+
+    fprintf(stdout, "Starting to add a Mole!\n");
     // Put the Mole at the tail of the queue
 
     // Get the representation of the multithreaded queue
@@ -119,11 +134,14 @@ extern void mtq_tail_put(Mtq mtq, Mole mole)
     // Lock the mutex
     pthread_mutex_lock(&rep->mutexlock);
 
+    fprintf(stdout, "Hand in cookie jar!\n");
+
     // Has it hit the limit?
-    while (!(rep->zeroflag) || rep->size > rep->max)
+    while (!(rep->zeroflag) || rep->size < rep->max)
     {
         // Just Spin?
         // Add condition variable here
+        pthread_cond_wait(&rep->condition, &rep->mutexlock);
     }
 
     // Able to put something on the mtq
@@ -134,6 +152,7 @@ extern void mtq_tail_put(Mtq mtq, Mole mole)
 
     // Unlock and add signaling (W.I.P)
     pthread_mutex_unlock(&rep->mutexlock);
+    pthread_cond_signal(&rep->condition);
 
     // Successful operation!
     return;
