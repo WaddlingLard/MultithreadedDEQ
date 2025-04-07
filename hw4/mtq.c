@@ -49,7 +49,7 @@ extern Mtq mtq_new(int max)
 
     // Initialize the max size of the mtq
     // Zero means limit will be never hit (handled later)
-    if (rep->max == 0)
+    if (max == 0)
     {
         // Mark zero flag
         rep->zeroflag = 1;
@@ -69,9 +69,12 @@ extern void mtq_del(Mtq mtq)
     MtqRep rep = (MtqRep)mtq;
 
     // NEED TO DO MORE
+    pthread_cond_destroy(&rep->condition);
+    pthread_mutex_destroy(&rep->readlock);
+    pthread_mutex_destroy(&rep->writelock);
 
-    // Free the deq
-    // deq_del(rep->deq);
+        // Free the deq
+    deq_del(rep->deq, 0);
 
     // Free the mtq
     free(mtq);
@@ -82,7 +85,7 @@ extern void mtq_del(Mtq mtq)
 // DOCUMENTATION
 extern Mole mtq_head_get(Mtq mtq)
 {
-    fprintf(stdout, "Grabbing a mole from the mtq!\n");
+    // fprintf(stdout, "Grabbing a mole from the mtq!\n");
     // Grab the Mole at the head of the queue
 
     // Get the representation of the multithreaded queue
@@ -91,7 +94,7 @@ extern Mole mtq_head_get(Mtq mtq)
     // Lock the mutex
     pthread_mutex_lock(&rep->readlock);
 
-    fprintf(stdout, "Hand in cookie jar to get!\n");
+    // fprintf(stdout, "Hand in cookie jar to get!\n");
 
     // Needs something in the mtq
     // ! logic is wrong
@@ -99,15 +102,15 @@ extern Mole mtq_head_get(Mtq mtq)
     {
         // Just Spin?
         // Add condition variable here
-        fprintf(stdout, "Nothing is in the mtq!\n");
+        // fprintf(stdout, "Nothing is in the mtq!\n");
         // fprintf(stdout, "Size: %d, Max: %d\n", rep->size, rep->max);
         pthread_cond_wait(&rep->condition, &rep->readlock);
-        fprintf(stdout, "Waiting complete!\n");
+        // fprintf(stdout, "Waiting complete!\n");
     }
 
-    fprintf(stdout, "Size: %d, Max: %d\n", rep->size, rep->max);
+    // fprintf(stdout, "Size: %d, Max: %d\n", rep->size, rep->max);
 
-    fprintf(stdout, "Grabbing item in cookie jar!\n");
+    // fprintf(stdout, "Grabbing item in cookie jar!\n");
 
     // Something is in the mtq!
     // ? I think this is accessing it properly
@@ -130,7 +133,7 @@ extern Mole mtq_head_get(Mtq mtq)
 extern void mtq_tail_put(Mtq mtq, Mole mole)
 {
 
-    fprintf(stdout, "Starting to add a Mole!\n");
+    // fprintf(stdout, "Starting to add a Mole!\n");
     // Put the Mole at the tail of the queue
 
     // Get the representation of the multithreaded queue
@@ -139,7 +142,7 @@ extern void mtq_tail_put(Mtq mtq, Mole mole)
     // Lock the mutex
     pthread_mutex_lock(&rep->writelock);
 
-    fprintf(stdout, "Hand in cookie jar (PUTTING)!\n");
+    // fprintf(stdout, "Hand in cookie jar (PUTTING)!\n");
 
     // Has it hit the limit?
     // ! logic error
@@ -147,11 +150,11 @@ extern void mtq_tail_put(Mtq mtq, Mole mole)
     {
         // Just Spin?
         // Add condition variable here
-        fprintf(stdout, "Cannot add! Statement 1: %d, 2: %d\n", !(rep->zeroflag), rep->size > rep->max);
+        // fprintf(stdout, "Cannot add! Statement 1: %d, 2: %d\n", !(rep->zeroflag), rep->size > rep->max);
         pthread_cond_wait(&rep->condition, &rep->writelock);
     }
 
-    fprintf(stdout, "About to add, current size: %d, max: %d\n", rep->size, rep->max);
+    // fprintf(stdout, "About to add, current size: %d, max: %d\n", rep->size, rep->max);
 
     // Able to put something on the mtq
     deq_tail_put(rep->deq, mole);
