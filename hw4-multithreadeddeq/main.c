@@ -46,44 +46,46 @@ static void *consume(void *a)
 }
 
 // DOCUMENTATION
-void multicreateproduce(int n, pthread_t **producers, void *mp)
+void multicreateproduce(int n, pthread_t producers[], void *mp)
 {
   for (int i = 0; i < n; i++)
   {
     // MT variant to produce
-    pthread_create(producers[i], 0, produce, mp);
+    // fprintf(stdout, "Creating producer thread number: %d!\n", i);
+    pthread_create(&producers[i], NULL, produce, mp);
   }
 }
 
 // DOCUMENTATION
-void multicreateconsume(int n, pthread_t **consumers, void *deq)
+void multicreateconsume(int n, pthread_t consumers[], void *deq)
 {
   for (int i = 0; i < n; i++)
   {
     // MT variant to consume
-    pthread_create(consumers[i], 0, consume, deq);
+    // fprintf(stdout, "Creating consumer thread number: %d!\n", i);
+    pthread_create(&consumers[i], NULL, consume, deq);
   }
 }
 
 // DOCUMENTATION
-void multijoinproduce(int n, pthread_t **producers)
+void multijoinproduce(int n, pthread_t producers[])
 {
   // Join the threads back together
   for (int i = 0; i < n; i++)
   {
     // Wait for produce thread to finish
-    pthread_join(*producers[i], 0);
+    pthread_join(producers[i], 0);
   }
 }
 
 // DOCUMENTATION
-void multijoinconsume(int n, pthread_t **consumers)
+void multijoinconsume(int n, pthread_t consumers[])
 {
   // Join the consume threads back together
   for (int i = 0; i < n; i++)
   {
     // Wait for consume thread to finish
-    pthread_join(*consumers[i], 0);
+    pthread_join(consumers[i], 0);
   }
 }
 
@@ -110,11 +112,11 @@ int main()
   mp.lawn = lawn;
 
   // Execute multithreaded operations
-  multicreateproduce(n, (pthread_t **)producetids, (void *)&mp);
-  multicreateconsume(n, (pthread_t **)consumetids, jobs);
+  multicreateproduce(n, producetids, (void *)&mp);
+  multicreateconsume(n, consumetids, jobs);
 
-  multijoinproduce(n, (pthread_t **)producetids);
-  multijoinconsume(n, (pthread_t **)consumetids);
+  multijoinproduce(n, producetids);
+  multijoinconsume(n, consumetids);
 
   lawn_free(lawn);
   deq_del(jobs, 0);
