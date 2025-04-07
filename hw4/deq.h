@@ -32,9 +32,4 @@ extern void deq_map(Deq q, DeqMapF f); // foreach
 extern void deq_del(Deq q, DeqMapF f); // free
 extern Str deq_str(Deq q, DeqStrF f);  // toString
 
-extern void test()
-{
-    fprintf(stdout, "TEST!\n");
-}
-
 #endif
