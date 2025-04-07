@@ -54,6 +54,10 @@ extern Mtq mtq_new(int max)
         // Mark zero flag
         rep->zeroflag = 1;
     }
+    else
+    {
+        rep->zeroflag = 0;
+    }
     rep->max = max;
 
     // Return the deq
@@ -73,7 +77,7 @@ extern void mtq_del(Mtq mtq)
     pthread_mutex_destroy(&rep->readlock);
     pthread_mutex_destroy(&rep->writelock);
 
-        // Free the deq
+    // Free the deq
     deq_del(rep->deq, 0);
 
     // Free the mtq
@@ -146,8 +150,14 @@ extern void mtq_tail_put(Mtq mtq, Mole mole)
 
     // Has it hit the limit?
     // ! logic error
+
+    // fprintf(stdout, "Statement 1: %d, 2: %d\n", !(rep->zeroflag), rep->size);
+
     while (!(rep->zeroflag) && rep->size > rep->max)
     {
+
+        // fprintf(stdout, "Size is topped out! Size: %d\n", rep->size);
+
         // Just Spin?
         // Add condition variable here
         // fprintf(stdout, "Cannot add! Statement 1: %d, 2: %d\n", !(rep->zeroflag), rep->size > rep->max);
