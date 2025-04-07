@@ -34,9 +34,9 @@ static void *produce(void *a)
   // deq_tail_put(q, mole_new(l, 0, 0));
 
   // Utilize thread safe operation
-  fprintf(stdout, "Putting in the mole!\n");
+  // fprintf(stdout, "Putting in the mole!\n");
   mtq_tail_put(q, mole_new(l, 0, 0));
-  fprintf(stdout, "Put has been completed!\n");
+  // fprintf(stdout, "Put has been completed!\n");
   return 0;
 }
 
@@ -55,9 +55,9 @@ static void *consume(void *a)
   // mole_whack(deq_head_get(q));
 
   // Utilize thread safe operation
-  fprintf(stdout, "Wacking mole!\n");
+  // fprintf(stdout, "Wacking mole!\n");
   mole_whack(mtq_head_get(q));
-  fprintf(stdout, "Mole has been wacked!\n");
+  // fprintf(stdout, "Mole has been wacked!\n");
   return 0;
 }
 
@@ -67,7 +67,7 @@ void multicreateproduce(int n, pthread_t producers[], void *mp)
   for (int i = 0; i < n; i++)
   {
     // MT variant to produce
-    fprintf(stdout, "Creating producer thread number: %d!\n", i);
+    // fprintf(stdout, "Creating producer thread number: %d!\n", i);
     pthread_create(&producers[i], NULL, produce, mp);
   }
 }
@@ -78,7 +78,7 @@ void multicreateconsume(int n, pthread_t consumers[], void *deq)
   for (int i = 0; i < n; i++)
   {
     // MT variant to consume
-    fprintf(stdout, "Creating consumer thread number: %d!\n", i);
+    // fprintf(stdout, "Creating consumer thread number: %d!\n", i);
     pthread_create(&consumers[i], NULL, consume, deq);
   }
 }
@@ -121,7 +121,9 @@ int main()
   // Deq jobs = deq_new();
 
   // Use multithreaded queue with n
-  Mtq multijobs = mtq_new(n);
+  // Can work with a limit 'n' or unlimited (0)
+  // Mtq multijobs = mtq_new(n);
+  Mtq multijobs = mtq_new(0);
 
   pthread_t producetids[n];
   pthread_t consumetids[n];
@@ -134,7 +136,7 @@ int main()
   mp.mtq = multijobs;
   mp.lawn = lawn;
 
-  fprintf(stdout, "Created mtq!\n");
+  // fprintf(stdout, "Created mtq!\n");
   // Execute multithreaded operations
   multicreateproduce(n, producetids, (void *)&mp);
   multicreateconsume(n, consumetids, multijobs);
