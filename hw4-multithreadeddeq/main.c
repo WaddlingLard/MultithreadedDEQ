@@ -107,7 +107,7 @@ int main()
   // Create struct to send to produce function
   Moleproduce mp;
   mp.deq = jobs;
-  mp.deq = lawn;
+  mp.lawn = lawn;
 
   // Execute multithreaded operations
   multicreateproduce(n, (pthread_t **)producetids, (void *)&mp);
