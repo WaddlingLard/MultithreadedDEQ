@@ -17,7 +17,10 @@
 // static Mole produce(Lawn l) { return mole_new(l, 0, 0); }
 // static void consume(Mole m) { mole_whack(m); }
 
-// ADD DOCUMENTATION
+/**
+ * A function pointer that enacts thread safe write operations on a multithreaded queue
+ * @param a: void pointer that contains the arglist(mtq, lawn)
+ */
 static void *produce(void *a)
 {
   void **arg = a;
@@ -34,13 +37,14 @@ static void *produce(void *a)
   // deq_tail_put(q, mole_new(l, 0, 0));
 
   // Utilize thread safe operation
-  // fprintf(stdout, "Putting in the mole!\n");
   mtq_tail_put(q, mole_new(l, 0, 0));
-  // fprintf(stdout, "Put has been completed!\n");
   return 0;
 }
 
-// ADD DOCUMENTATION
+/**
+ * A function pointer that enacts thread safe read operations on a multithreaded queue
+ * @param a: void pointer that contains the mtq
+ */
 static void *consume(void *a)
 {
   if (!a)
@@ -55,35 +59,45 @@ static void *consume(void *a)
   // mole_whack(deq_head_get(q));
 
   // Utilize thread safe operation
-  // fprintf(stdout, "Wacking mole!\n");
   mole_whack(mtq_head_get(q));
-  // fprintf(stdout, "Mole has been wacked!\n");
   return 0;
 }
 
-// DOCUMENTATION
+/**
+ * Function that creates multiple threads to produce moles
+ * @param n: amount of jobs
+ * @param producers[]: an array of pthreads
+ * @param mp: struct that contains arglist
+ */
 void multicreateproduce(int n, pthread_t producers[], void *mp)
 {
   for (int i = 0; i < n; i++)
   {
     // MT variant to produce
-    // fprintf(stdout, "Creating producer thread number: %d!\n", i);
     pthread_create(&producers[i], NULL, produce, mp);
   }
 }
 
-// DOCUMENTATION
+/**
+ * Function that creates multiple threads to bonk moles
+ * @param n: amount of jobs
+ * @param consumers[]: an array of pthreads
+ * @param deq: A pointer to the deq
+ */
 void multicreateconsume(int n, pthread_t consumers[], void *deq)
 {
   for (int i = 0; i < n; i++)
   {
     // MT variant to consume
-    // fprintf(stdout, "Creating consumer thread number: %d!\n", i);
     pthread_create(&consumers[i], NULL, consume, deq);
   }
 }
 
-// DOCUMENTATION
+/**
+ * Function that waits for multiple producing threads
+ * @param n: amount of jobs
+ * @param producers[]: an array of pthreads
+ */
 void multijoinproduce(int n, pthread_t producers[])
 {
   // Join the threads back together
@@ -94,7 +108,11 @@ void multijoinproduce(int n, pthread_t producers[])
   }
 }
 
-// DOCUMENTATION
+/**
+ * Function that waits for multiple consuming threads
+ * @param n: amount of jobs
+ * @param consumers[]: an array of pthreads
+ */
 void multijoinconsume(int n, pthread_t consumers[])
 {
   // Join the consume threads back together
@@ -116,14 +134,14 @@ int main()
   } typedef Moleproduce;
 
   srandom(time(0));
-  const int n = 10;
+  const int n = 100;
 
   // Deq jobs = deq_new();
 
   // Use multithreaded queue with n
   // Can work with a limit 'n' or unlimited (0)
-  // Mtq multijobs = mtq_new(n);
-  Mtq multijobs = mtq_new(0);
+  Mtq multijobs = mtq_new(n);
+  // Mtq multijobs = mtq_new(1);
 
   pthread_t producetids[n];
   pthread_t consumetids[n];
@@ -136,7 +154,6 @@ int main()
   mp.mtq = multijobs;
   mp.lawn = lawn;
 
-  // fprintf(stdout, "Created mtq!\n");
   // Execute multithreaded operations
   multicreateproduce(n, producetids, (void *)&mp);
   multicreateconsume(n, consumetids, multijobs);
